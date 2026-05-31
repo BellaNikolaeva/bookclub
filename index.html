@@ -245,11 +245,12 @@ const getFingerprint = () => {
   return fp;
 };
 
-// Компонент ввода кода
-const CodeVerification = ({ email, onVerify, onCancel }) => {
+// Компонент ввода кода (с кнопкой повторной отправки)
+const CodeVerification = ({ email, onVerify, onCancel, onResend }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -290,6 +291,19 @@ const CodeVerification = ({ email, onVerify, onCancel }) => {
     }
   };
 
+  const handleResend = async () => {
+    setResending(true);
+    setError('');
+    try {
+      await onResend();
+      setError('✅ Новый код отправлен на почту');
+    } catch (err) {
+      setError('Ошибка отправки кода. Попробуйте позже.');
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <div className="modal" onClick={onCancel}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -307,6 +321,9 @@ const CodeVerification = ({ email, onVerify, onCancel }) => {
           {error && <div className="error-message">{error}</div>}
           <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
             <button type="button" className="btn" onClick={onCancel}>Отмена</button>
+            <button type="button" className="btn" onClick={handleResend} disabled={resending}>
+              {resending ? 'Отправка...' : '🔄 Отправить код повторно'}
+            </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Проверка...' : 'Подтвердить'}
             </button>
@@ -325,6 +342,7 @@ const Login = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
+  const [pendingUsername, setPendingUsername] = useState('');
 
   const sendCode = async (targetEmail, targetUsername) => {
     const code = generateCode();
@@ -334,7 +352,7 @@ const Login = ({ onLogin }) => {
     console.log('Email:', targetEmail);
     console.log('Код:', code);
 
-    // 1. СНАЧАЛА сохраняем код в Firebase
+    // Сохраняем код в Firebase
     await db.collection('verification_codes').doc(targetEmail).set({
       code: code,
       expiresAt: expiresAt,
@@ -342,15 +360,7 @@ const Login = ({ onLogin }) => {
     });
     console.log('✅ Код сохранён в Firebase');
 
-    // ПРОВЕРКА: сразу читаем, что сохранилось
-    const check = await db.collection('verification_codes').doc(targetEmail).get();
-    if (check.exists) {
-      console.log('✅ Проверка: документ существует, код:', check.data().code);
-    } else {
-      console.error('❌ ДОКУМЕНТ ИСЧЕЗ СРАЗУ ПОСЛЕ СОХРАНЕНИЯ!');
-    }
-
-    // 2. ПОТОМ отправляем письмо
+    // Отправляем письмо
     const res = await fetch('/.netlify/functions/send-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -397,6 +407,7 @@ const Login = ({ onLogin }) => {
         console.log('Новый пользователь, отправляем код');
         await sendCode(email, username);
         setPendingEmail(email);
+        setPendingUsername(username);
         setStep('verify');
       } else {
         const devices = userDoc.data().devices || [];
@@ -413,6 +424,7 @@ const Login = ({ onLogin }) => {
           }
           console.log('Новое устройство, отправляем код на:', userEmail);
           setPendingEmail(userEmail);
+          setPendingUsername(username);
           await sendCode(userEmail, username);
           setStep('verify');
         }
@@ -480,8 +492,19 @@ const Login = ({ onLogin }) => {
     onLogin(verifiedUsername);
   };
 
+  const handleResendCode = async () => {
+    await sendCode(pendingEmail, pendingUsername);
+  };
+
   if (step === 'verify') {
-    return <CodeVerification email={pendingEmail} onVerify={handleVerify} onCancel={() => setStep('form')} />;
+    return (
+      <CodeVerification 
+        email={pendingEmail} 
+        onVerify={handleVerify} 
+        onCancel={() => setStep('form')}
+        onResend={handleResendCode}
+      />
+    );
   }
 
   return (
