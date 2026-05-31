@@ -658,5 +658,62 @@ const App = () => {
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
+
+<!-- Защита от консоли и DevTools -->
+<script>
+(function() {
+    // Блокировка клавиш F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    document.addEventListener('keydown', function(e) {
+        // F12
+        if (e.key === 'F12') {
+            e.preventDefault();
+            return false;
+        }
+        // Ctrl+Shift+I
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+            e.preventDefault();
+            return false;
+        }
+        // Ctrl+Shift+J
+        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+            e.preventDefault();
+            return false;
+        }
+        // Ctrl+U
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // Защита от правой кнопки мыши (контекстное меню)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
+    // Обнаружение открытого DevTools через проверку времени выполнения
+    let devToolsDetected = false;
+    setInterval(() => {
+        const start = performance.now();
+        debugger;
+        const end = performance.now();
+        if (end - start > 100) {
+            if (!devToolsDetected) {
+                devToolsDetected = true;
+                // Очищаем страницу при обнаружении DevTools
+                document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif;"><h1>Доступ запрещён</h1><p>Инструменты разработчика отключены для этого сайта.</p></div>';
+                document.body.style.background = '#fff';
+                document.body.style.minHeight = '100vh';
+            }
+        }
+    }, 1000);
+    
+    // Защита от копирования текста (необязательно, можно убрать)
+    document.addEventListener('copy', function(e) {
+        // e.preventDefault(); // раскомментируйте, чтобы запретить копирование
+    });
+})();
+</script>
 </body>
 </html>
