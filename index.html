@@ -361,7 +361,7 @@ const Login = ({ onLogin }) => {
     console.log('✅ Код сохранён в Firebase');
 
     // Отправляем письмо
-    const res = await fetch('/.netlify/functions/send-code', {
+    const res = await fetch('/api/send-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: targetEmail, code: code })
