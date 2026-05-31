@@ -1,3 +1,26 @@
+console.log("===== ДИАГНОСТИКА ПРИ ЗАПУСКЕ =====");
+console.log("Node.js version:", process.version);
+console.log("PORT из окружения:", process.env.PORT);
+console.log("");
+
+console.log("--- Переменные окружения ---");
+console.log("TEST_VAR:", process.env.TEST_VAR || "❌ не задана");
+console.log("FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID ? "✅ задан" : "❌ не задан");
+console.log("FIREBASE_CLIENT_EMAIL:", process.env.FIREBASE_CLIENT_EMAIL ? "✅ задан" : "❌ не задан");
+console.log("FIREBASE_PRIVATE_KEY:", process.env.FIREBASE_PRIVATE_KEY ? "✅ задан (первые 50 символов: " + process.env.FIREBASE_PRIVATE_KEY.substring(0, 50) + "...)" : "❌ не задан");
+console.log("ADMIN_SECRET:", process.env.ADMIN_SECRET ? "✅ задан" : "❌ не задан");
+console.log("");
+
+console.log("--- Все переменные (первые 10) ---");
+let count = 0;
+for (const key in process.env) {
+  if (count < 10) {
+    console.log(`  ${key}=${process.env[key].substring(0, 30)}...`);
+    count++;
+  }
+}
+console.log("================================\n");
+
 require('dotenv').config();
 
 const express = require('express');
@@ -11,7 +34,14 @@ const serviceAccount = {
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
 };
 
+console.log("=== ИНИЦИАЛИЗАЦИЯ FIREBASE ===");
+console.log("serviceAccount.projectId:", serviceAccount.projectId || "❌");
+console.log("serviceAccount.clientEmail:", serviceAccount.clientEmail || "❌");
+console.log("serviceAccount.privateKey:", serviceAccount.privateKey ? "✅ есть (" + serviceAccount.privateKey.length + " символов)" : "❌");
+console.log("==============================\n");
+
 // ВРЕМЕННО ОТКЛЮЧАЕМ FIREBASE ДЛЯ ДИАГНОСТИКИ СТАТИКИ
+// Раскомментируйте эти строки, когда захотите включить Firebase
 /*
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -22,16 +52,17 @@ const db = admin.firestore();
 // ВРЕМЕННАЯ ЗАГЛУШКА
 const db = null;
 console.log("⚠️ Firebase ВРЕМЕННО отключен для диагностики статики");
-console.log("Проверяем, работает ли раздача файлов из папки public...");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-// ИСПРАВЛЕННЫЙ ПУТЬ К СТАТИКЕ (абсолютный)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ---------- ВРЕМЕННЫЕ ТЕСТОВЫЕ МАРШРУТЫ ----------
+console.log(`📁 Папка public: ${path.join(__dirname, 'public')}`);
+console.log(`🚀 Запуск сервера на порту ${PORT}...`);
+
+// ---------- ТЕСТОВЫЕ МАРШРУТЫ ----------
 app.get('/test', (req, res) => {
   res.send('Сервер работает! 🚀');
 });
@@ -48,7 +79,6 @@ app.get('/check-public', (req, res) => {
   });
 });
 
-// ВРЕМЕННЫЙ МАРШРУТ ДЛЯ ПРОВЕРКИ, ЧТО СЕРВЕР ВИДИТ index.html
 app.get('/check-index', (req, res) => {
   const fs = require('fs');
   const indexPath = path.join(__dirname, 'public', 'index.html');
@@ -61,22 +91,7 @@ app.get('/check-index', (req, res) => {
   });
 });
 
-// ---------- API endpoints (временно закомментированы) ----------
-/*
-// Получить все встречи
-app.get('/api/meetings', async (req, res) => {
-  try {
-    const snapshot = await db.collection('meetings').get();
-    const meetings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(meetings);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-// ... остальные API временно отключены
-*/
-
-// Заглушка для API, чтобы фронтенд не падал
+// ---------- API заглушки (чтобы фронтенд не падал) ----------
 app.get('/api/meetings', (req, res) => {
   res.json([]);
 });
@@ -97,9 +112,9 @@ app.post('/api/register-device', (req, res) => {
   res.json({ success: true, username: req.body.username, isNew: true });
 });
 
-// Запуск сервера
+// ---------- Запуск сервера ----------
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Сервер запущен на порту ${PORT}`);
-  console.log(`📁 Папка public: ${path.join(__dirname, 'public')}`);
-  console.log(`🔗 Откройте: http://localhost:${PORT}`);
+  console.log(`✅ Сервер УСПЕШНО запущен на порту ${PORT}`);
+  console.log(`🔗 Откройте: https://bookclub-79w3.onrender.com`);
+  console.log(`🔗 Тестовый маршрут: https://bookclub-79w3.onrender.com/test`);
 });
