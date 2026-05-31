@@ -12,3 +12,5 @@ package-lock.json
 # Логи
 *.log
 .DS_Store
+.vercel
+.env*
