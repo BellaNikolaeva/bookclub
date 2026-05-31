@@ -693,21 +693,21 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     });
     
     // Обнаружение открытого DevTools через проверку времени выполнения
-    let devToolsDetected = false;
-    setInterval(() => {
-        const start = performance.now();
-        debugger;
-        const end = performance.now();
-        if (end - start > 100) {
-            if (!devToolsDetected) {
-                devToolsDetected = true;
-                // Очищаем страницу при обнаружении DevTools
-                document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif;"><h1>Доступ запрещён</h1><p>Инструменты разработчика отключены для этого сайта.</p></div>';
-                document.body.style.background = '#fff';
-                document.body.style.minHeight = '100vh';
-            }
-        }
-    }, 1000);
+    // let devToolsDetected = false;
+    // setInterval(() => {
+    //     const start = performance.now();
+    //     debugger;
+    //     const end = performance.now();
+    //     if (end - start > 100) {
+    //         if (!devToolsDetected) {
+    //             devToolsDetected = true;
+    //             // Очищаем страницу при обнаружении DevTools
+    //             document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif;"><h1>Доступ запрещён</h1><p>Инструменты разработчика отключены для этого сайта.</p></div>';
+    //             document.body.style.background = '#fff';
+    //             document.body.style.minHeight = '100vh';
+    //         }
+    //     }
+    // }, 1000);
     
     // Защита от копирования текста (необязательно, можно убрать)
     document.addEventListener('copy', function(e) {
