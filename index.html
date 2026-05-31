@@ -208,11 +208,11 @@
 <body>
 <div id="root"></div>
 
-<!-- Сначала загружаем Firebase -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<!-- Затем React -->
+<!-- React & Babel -->
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
@@ -245,7 +245,7 @@ const getFingerprint = () => {
   return fp;
 };
 
-// Компонент ввода кода
+// Компонент ввода кода (исправлена ошибка uncontrolled input)
 const CodeVerification = ({ email, onVerify, onCancel }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -256,28 +256,33 @@ const CodeVerification = ({ email, onVerify, onCancel }) => {
     setError('');
     setLoading(true);
 
-    const verificationDoc = await db.collection('verification_codes').doc(email).get();
-    if (!verificationDoc.exists) {
-      setError('Код не найден или истек. Запросите новый код.');
-      setLoading(false);
-      return;
-    }
+    try {
+      const verificationDoc = await db.collection('verification_codes').doc(email).get();
+      if (!verificationDoc.exists) {
+        setError('Код не найден или истек. Запросите новый код.');
+        setLoading(false);
+        return;
+      }
 
-    const data = verificationDoc.data();
-    if (data.code !== code) {
-      setError('Неверный код');
-      setLoading(false);
-      return;
-    }
+      const data = verificationDoc.data();
+      if (data.code !== code) {
+        setError('Неверный код');
+        setLoading(false);
+        return;
+      }
 
-    if (data.expiresAt < Date.now()) {
-      setError('Код истек. Запросите новый.');
-      setLoading(false);
-      return;
-    }
+      if (data.expiresAt < Date.now()) {
+        setError('Код истек. Запросите новый.');
+        setLoading(false);
+        return;
+      }
 
-    await db.collection('verification_codes').doc(email).delete();
-    onVerify();
+      await db.collection('verification_codes').doc(email).delete();
+      onVerify();
+    } catch (err) {
+      setError('Ошибка проверки кода');
+      setLoading(false);
+    }
   };
 
   return (
@@ -289,7 +294,7 @@ const CodeVerification = ({ email, onVerify, onCancel }) => {
           <input
             type="text"
             placeholder="Введите 6-значный код"
-            value={code}
+            value={code || ''}
             onChange={e => setCode(e.target.value)}
             maxLength={6}
             autoFocus
@@ -314,6 +319,7 @@ const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
 
   const sendCode = async (targetEmail, targetUsername) => {
     const code = generateCode();
@@ -331,7 +337,10 @@ const Login = ({ onLogin }) => {
       body: JSON.stringify({ email: targetEmail, code: code })
     });
 
-    if (!res.ok) throw new Error('Ошибка отправки письма');
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Ошибка отправки письма');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -363,9 +372,10 @@ const Login = ({ onLogin }) => {
           return;
         }
         await sendCode(email, username);
+        setPendingEmail(email);
         setStep('verify');
       } else {
-        // Существующий пользователь — проверяем устройства
+        // Существующий пользователь
         const devices = userDoc.data().devices || [];
         const userEmail = userDoc.data().email;
         
@@ -374,7 +384,7 @@ const Login = ({ onLogin }) => {
           onLogin(username);
         } else {
           // Новое устройство для существующего пользователя
-          setEmail(userEmail);
+          setPendingEmail(userEmail);
           await sendCode(userEmail, username);
           setStep('verify');
         }
@@ -388,7 +398,7 @@ const Login = ({ onLogin }) => {
 
   const handleVerify = async () => {
     const fingerprint = getFingerprint();
-    const verificationDoc = await db.collection('verification_codes').doc(email).get();
+    const verificationDoc = await db.collection('verification_codes').doc(pendingEmail).get();
     
     if (!verificationDoc.exists) {
       setError('Ошибка верификации');
@@ -403,7 +413,7 @@ const Login = ({ onLogin }) => {
       // Создаём нового пользователя
       await db.collection('users').doc(verifiedUsername).set({
         username: verifiedUsername,
-        email: email,
+        email: pendingEmail,
         devices: [fingerprint],
         createdAt: new Date().toISOString()
       });
@@ -427,7 +437,7 @@ const Login = ({ onLogin }) => {
   };
 
   if (step === 'verify') {
-    return <CodeVerification email={email} onVerify={handleVerify} onCancel={() => setStep('form')} />;
+    return <CodeVerification email={pendingEmail} onVerify={handleVerify} onCancel={() => setStep('form')} />;
   }
 
   return (
@@ -437,14 +447,14 @@ const Login = ({ onLogin }) => {
         <input
           className="login-input"
           placeholder="Как к тебе обращаться?"
-          value={username}
+          value={username || ''}
           onChange={e => setUsername(e.target.value)}
           autoFocus
         />
         <input
           className="login-input"
           placeholder="Email (для подтверждения)"
-          value={email}
+          value={email || ''}
           onChange={e => setEmail(e.target.value)}
           type="email"
         />
@@ -480,11 +490,11 @@ const MeetingModal = ({ meeting, onSave, onClose }) => {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <h3>{meeting ? 'Редактировать встречу' : 'Новая встреча'}</h3>
         <form onSubmit={handleSubmit}>
-          <input placeholder="Название книги" value={book} onChange={e => setBook(e.target.value)} required />
-          <input placeholder="Автор" value={author} onChange={e => setAuthor(e.target.value)} required />
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
-          <input type="time" value={time} onChange={e => setTime(e.target.value)} required />
-          <input placeholder="Место встречи" value={location} onChange={e => setLocation(e.target.value)} required />
+          <input placeholder="Название книги" value={book || ''} onChange={e => setBook(e.target.value)} required />
+          <input placeholder="Автор" value={author || ''} onChange={e => setAuthor(e.target.value)} required />
+          <input type="date" value={date || ''} onChange={e => setDate(e.target.value)} required />
+          <input type="time" value={time || ''} onChange={e => setTime(e.target.value)} required />
+          <input placeholder="Место встречи" value={location || ''} onChange={e => setLocation(e.target.value)} required />
           <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
             <button type="button" className="btn" onClick={onClose}>Отмена</button>
             <button type="submit" className="btn btn-primary">Сохранить</button>
@@ -519,7 +529,6 @@ const App = () => {
     const unsubscribe = db.collection('meetings').onSnapshot(snapshot => {
       const meetingsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setMeetings(meetingsList);
-      setLoading(false);
     });
     return () => unsubscribe();
   }, [user]);
