@@ -245,7 +245,7 @@ const getFingerprint = () => {
   return fp;
 };
 
-// Компонент ввода кода (исправлена ошибка uncontrolled input)
+// Компонент ввода кода
 const CodeVerification = ({ email, onVerify, onCancel }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -256,30 +256,59 @@ const CodeVerification = ({ email, onVerify, onCancel }) => {
     setError('');
     setLoading(true);
 
+    console.log('=== ВЕРИФИКАЦИЯ ===');
+    console.log('Проверяем email:', email);
+    console.log('Введённый код:', code);
+    console.log('Тип введённого кода:', typeof code);
+
     try {
       const verificationDoc = await db.collection('verification_codes').doc(email).get();
+      
       if (!verificationDoc.exists) {
-        setError('Код не найден или истек. Запросите новый код.');
+        console.log('❌ Документ не найден в Firebase');
+        setError('Код не найден. Запросите новый код.');
         setLoading(false);
         return;
       }
 
       const data = verificationDoc.data();
-      if (data.code !== code) {
+      console.log('Данные из Firebase:', data);
+      console.log('Код из Firebase:', data.code);
+      console.log('Тип кода из Firebase:', typeof data.code);
+      console.log('Срок действия:', new Date(data.expiresAt).toLocaleString());
+      console.log('Текущее время:', new Date(Date.now()).toLocaleString());
+      
+      // Сравниваем как строки
+      const codeFromDb = String(data.code);
+      const enteredCode = String(code);
+      
+      console.log('Код из БД (строка):', codeFromDb);
+      console.log('Введённый код (строка):', enteredCode);
+      console.log('Коды равны?', codeFromDb === enteredCode);
+      
+      if (codeFromDb !== enteredCode) {
+        console.log('❌ Коды НЕ совпадают');
         setError('Неверный код');
         setLoading(false);
         return;
       }
 
       if (data.expiresAt < Date.now()) {
+        console.log('❌ Код истек');
         setError('Код истек. Запросите новый.');
         setLoading(false);
         return;
       }
 
+      console.log('✅ Код верный, продолжаем регистрацию...');
+      
+      // Удаляем использованный код
       await db.collection('verification_codes').doc(email).delete();
+      console.log('Код удалён из Firebase');
+      
       onVerify();
     } catch (err) {
+      console.error('❌ Ошибка верификации:', err);
       setError('Ошибка проверки кода');
       setLoading(false);
     }
@@ -325,11 +354,18 @@ const Login = ({ onLogin }) => {
     const code = generateCode();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
+    console.log('=== ОТПРАВКА КОДА ===');
+    console.log('Email:', targetEmail);
+    console.log('Код:', code);
+    console.log('Срок действия:', new Date(expiresAt).toLocaleString());
+
     await db.collection('verification_codes').doc(targetEmail).set({
       code: code,
       expiresAt: expiresAt,
       username: targetUsername
     });
+    
+    console.log('Код сохранён в Firebase');
 
     const res = await fetch('/.netlify/functions/send-code', {
       method: 'POST',
@@ -339,8 +375,11 @@ const Login = ({ onLogin }) => {
 
     if (!res.ok) {
       const errorData = await res.json();
+      console.error('❌ Ошибка отправки письма:', errorData);
       throw new Error(errorData.error || 'Ошибка отправки письма');
     }
+    
+    console.log('✅ Письмо отправлено');
   };
 
   const handleSubmit = async (e) => {
@@ -349,47 +388,49 @@ const Login = ({ onLogin }) => {
     setLoading(true);
 
     const fingerprint = getFingerprint();
+    console.log('=== НАЧАЛО ВХОДА ===');
+    console.log('Fingerprint:', fingerprint);
+    console.log('Username:', username);
+    console.log('Email:', email);
 
     try {
-      // Проверяем, есть ли уже устройство
       const deviceDoc = await db.collection('devices').doc(fingerprint).get();
       
       if (deviceDoc.exists) {
-        // Устройство уже привязано — автоматический вход
         const existingUsername = deviceDoc.data().username;
+        console.log('Устройство уже привязано к:', existingUsername);
         onLogin(existingUsername);
         return;
       }
 
-      // Новое устройство — проверяем, существует ли пользователь
       const userDoc = await db.collection('users').doc(username).get();
       
       if (!userDoc.exists) {
-        // Новый пользователь
         if (!email) {
           setError('Введите email для регистрации');
           setLoading(false);
           return;
         }
+        console.log('Новый пользователь, отправляем код');
         await sendCode(email, username);
         setPendingEmail(email);
         setStep('verify');
       } else {
-        // Существующий пользователь
         const devices = userDoc.data().devices || [];
         const userEmail = userDoc.data().email;
         
         if (devices.includes(fingerprint)) {
-          // Уже знакомое устройство
+          console.log('Знакомое устройство, вход без кода');
           onLogin(username);
         } else {
-          // Новое устройство для существующего пользователя
+          console.log('Новое устройство для существующего пользователя, отправляем код');
           setPendingEmail(userEmail);
           await sendCode(userEmail, username);
           setStep('verify');
         }
       }
     } catch (err) {
+      console.error('❌ Ошибка:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -398,6 +439,10 @@ const Login = ({ onLogin }) => {
 
   const handleVerify = async () => {
     const fingerprint = getFingerprint();
+    console.log('=== ЗАВЕРШЕНИЕ РЕГИСТРАЦИИ ===');
+    console.log('Email:', pendingEmail);
+    console.log('Fingerprint:', fingerprint);
+    
     const verificationDoc = await db.collection('verification_codes').doc(pendingEmail).get();
     
     if (!verificationDoc.exists) {
@@ -407,32 +452,37 @@ const Login = ({ onLogin }) => {
     }
 
     const verifiedUsername = verificationDoc.data().username;
+    console.log('Подтверждённый username:', verifiedUsername);
+    
     const userDoc = await db.collection('users').doc(verifiedUsername).get();
 
     if (!userDoc.exists) {
-      // Создаём нового пользователя
       await db.collection('users').doc(verifiedUsername).set({
         username: verifiedUsername,
         email: pendingEmail,
         devices: [fingerprint],
         createdAt: new Date().toISOString()
       });
+      console.log('Создан новый пользователь');
     } else {
-      // Добавляем новое устройство существующему пользователю
       const devices = userDoc.data().devices || [];
       if (!devices.includes(fingerprint)) {
         await db.collection('users').doc(verifiedUsername).update({
           devices: [...devices, fingerprint]
         });
+        console.log('Добавлено новое устройство');
       }
     }
 
-    // Сохраняем привязку устройства
     await db.collection('devices').doc(fingerprint).set({
       username: verifiedUsername,
       lastUsed: new Date().toISOString()
     });
+    console.log('Устройство сохранено');
 
+    await db.collection('verification_codes').doc(pendingEmail).delete();
+    console.log('✅ Верификация успешна!');
+    
     onLogin(verifiedUsername);
   };
 
