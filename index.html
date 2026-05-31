@@ -330,12 +330,19 @@ const Login = ({ onLogin }) => {
     const code = generateCode();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
+    console.log('=== ОТПРАВКА КОДА ===');
+    console.log('Email:', targetEmail);
+    console.log('Код:', code);
+
+    // 1. СНАЧАЛА сохраняем код в Firebase
     await db.collection('verification_codes').doc(targetEmail).set({
       code: code,
       expiresAt: expiresAt,
       username: targetUsername
     });
+    console.log('✅ Код сохранён в Firebase');
 
+    // 2. ПОТОМ отправляем письмо
     const res = await fetch('/.netlify/functions/send-code', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -344,8 +351,11 @@ const Login = ({ onLogin }) => {
 
     if (!res.ok) {
       const errorData = await res.json();
+      console.error('❌ Ошибка отправки письма:', errorData);
       throw new Error(errorData.error || 'Ошибка отправки письма');
     }
+    
+    console.log('✅ Письмо отправлено');
   };
 
   const handleSubmit = async (e) => {
@@ -354,12 +364,16 @@ const Login = ({ onLogin }) => {
     setLoading(true);
 
     const fingerprint = getFingerprint();
+    console.log('=== НАЧАЛО ВХОДА ===');
+    console.log('Username:', username);
+    console.log('Email:', email);
 
     try {
       const deviceDoc = await db.collection('devices').doc(fingerprint).get();
       
       if (deviceDoc.exists) {
         const existingUsername = deviceDoc.data().username;
+        console.log('Устройство уже привязано к:', existingUsername);
         onLogin(existingUsername);
         return;
       }
@@ -372,6 +386,7 @@ const Login = ({ onLogin }) => {
           setLoading(false);
           return;
         }
+        console.log('Новый пользователь, отправляем код');
         await sendCode(email, username);
         setPendingEmail(email);
         setStep('verify');
@@ -379,6 +394,7 @@ const Login = ({ onLogin }) => {
         const devices = userDoc.data().devices || [];
         
         if (devices.includes(fingerprint)) {
+          console.log('Знакомое устройство, вход без кода');
           onLogin(username);
         } else {
           const userEmail = userDoc.data().email;
@@ -387,12 +403,14 @@ const Login = ({ onLogin }) => {
             setLoading(false);
             return;
           }
+          console.log('Новое устройство, отправляем код на:', userEmail);
           setPendingEmail(userEmail);
           await sendCode(userEmail, username);
           setStep('verify');
         }
       }
     } catch (err) {
+      console.error('❌ Ошибка:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -401,9 +419,13 @@ const Login = ({ onLogin }) => {
 
   const handleVerify = async () => {
     const fingerprint = getFingerprint();
+    console.log('=== ВЕРИФИКАЦИЯ ===');
+    console.log('Email:', pendingEmail);
+    
     const verificationDoc = await db.collection('verification_codes').doc(pendingEmail).get();
     
     if (!verificationDoc.exists) {
+      console.error('❌ Документ не найден');
       setError('Ошибка верификации');
       setStep('form');
       return;
@@ -411,6 +433,8 @@ const Login = ({ onLogin }) => {
 
     const verifiedUsername = verificationDoc.data().username;
     const userEmail = pendingEmail;
+    console.log('Подтверждённый username:', verifiedUsername);
+    
     const userDoc = await db.collection('users').doc(verifiedUsername).get();
 
     if (!userDoc.exists) {
@@ -420,12 +444,14 @@ const Login = ({ onLogin }) => {
         devices: [fingerprint],
         createdAt: new Date().toISOString()
       });
+      console.log('✅ Создан новый пользователь');
     } else {
       const devices = userDoc.data().devices || [];
       if (!devices.includes(fingerprint)) {
         await db.collection('users').doc(verifiedUsername).update({
           devices: [...devices, fingerprint]
         });
+        console.log('✅ Добавлено новое устройство');
       }
       if (!userDoc.data().email && userEmail) {
         await db.collection('users').doc(verifiedUsername).update({
@@ -438,8 +464,11 @@ const Login = ({ onLogin }) => {
       username: verifiedUsername,
       lastUsed: new Date().toISOString()
     });
+    console.log('✅ Устройство сохранено');
 
     await db.collection('verification_codes').doc(pendingEmail).delete();
+    console.log('✅ Верификация успешна!');
+    
     onLogin(verifiedUsername);
   };
 
@@ -659,60 +688,34 @@ const App = () => {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 
-<!-- Защита от консоли и DevTools -->
+<!-- Лёгкая защита от консоли (только блокировка клавиш)
 <script>
 (function() {
     // Блокировка клавиш F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
     document.addEventListener('keydown', function(e) {
-        // F12
         if (e.key === 'F12') {
             e.preventDefault();
             return false;
         }
-        // Ctrl+Shift+I
         if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
             e.preventDefault();
             return false;
         }
-        // Ctrl+Shift+J
         if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
             e.preventDefault();
             return false;
         }
-        // Ctrl+U
         if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
             e.preventDefault();
             return false;
         }
     });
     
-    // Защита от правой кнопки мыши (контекстное меню)
+    // Блокировка правой кнопки мыши
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         return false;
-    });
-    
-    // Обнаружение открытого DevTools через проверку времени выполнения
-    // let devToolsDetected = false;
-    // setInterval(() => {
-    //     const start = performance.now();
-    //     debugger;
-    //     const end = performance.now();
-    //     if (end - start > 100) {
-    //         if (!devToolsDetected) {
-    //             devToolsDetected = true;
-    //             // Очищаем страницу при обнаружении DevTools
-    //             document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif;"><h1>Доступ запрещён</h1><p>Инструменты разработчика отключены для этого сайта.</p></div>';
-    //             document.body.style.background = '#fff';
-    //             document.body.style.minHeight = '100vh';
-    //         }
-    //     }
-    // }, 1000);
-    
-    // Защита от копирования текста (необязательно, можно убрать)
-    document.addEventListener('copy', function(e) {
-        // e.preventDefault(); // раскомментируйте, чтобы запретить копирование
-    });
+    }); -->
 })();
 </script>
 </body>
