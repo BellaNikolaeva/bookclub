@@ -34,10 +34,7 @@
         .modal-content { background: white; border-radius: 40px; padding: 30px; width: 90%; max-width: 500px; }
         .modal-content input { width: 100%; padding: 12px; margin: 8px 0 16px; border-radius: 60px; border: 1px solid #ddcdb5; }
         .loading { text-align: center; padding: 50px; color: #7e6952; }
-        .code-input { font-size: 1.5rem; text-align: center; letter-spacing: 8px; }
         @media (max-width: 700px) { .meetings-grid { grid-template-columns: 1fr; } }
-        .step-container { max-width: 450px; margin: 0 auto; }
-        .step-title { font-size: 1.2rem; margin-bottom: 20px; color: #2c4128; }
     </style>
 </head>
 <body>
@@ -52,7 +49,6 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-// Firebase конфиг
 const firebaseConfig = {
   apiKey: "AIzaSyDeKUvJ50VcDihRi4EpE7PPJjPP-yhdiKs",
   authDomain: "book-club-2025-06.firebaseapp.com",
@@ -67,147 +63,26 @@ const db = firebase.firestore();
 
 const ADMIN_USERNAME = "admin";
 
-// Вспомогательные функции
-const getFingerprint = () => {
-  let fp = localStorage.getItem('device_fingerprint');
-  if (!fp) {
-    fp = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36) + Date.now().toString(36);
-    localStorage.setItem('device_fingerprint', fp);
-  }
-  return fp;
-};
-
-const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
-
-// Компонент ввода кода подтверждения
-const CodeVerification = ({ email, username, onVerified, onCancel, onResendCode }) => {
-  const [code, setCode] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!code) return;
-    
-    setIsLoading(true);
-    try {
-      const verificationDoc = await db.collection('email_verifications').doc(email).get();
-      if (verificationDoc.exists && verificationDoc.data().code === code) {
-        const expiresAt = verificationDoc.data().expiresAt?.toDate();
-        if (expiresAt && expiresAt > new Date()) {
-          await db.collection('email_verifications').doc(email).delete();
-          onVerified();
-        } else {
-          setError('Код истёк. Запросите новый');
-        }
-      } else {
-        setError('Неверный код');
-      }
-    } catch (err) {
-      setError('Ошибка проверки кода');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setIsResending(true);
-    await onResendCode();
-    setIsResending(false);
-  };
-
-  return (
-    <div className="modal" onClick={onCancel}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <h3>Подтверждение email</h3>
-        <p>Код отправлен на {email}</p>
-        <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Введите 6-значный код" className="code-input" value={code} onChange={e => setCode(e.target.value)} maxLength={6} autoFocus />
-          {error && <div className="error-message">{error}</div>}
-          <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'space-between' }}>
-            <button type="button" className="btn" onClick={handleResend} disabled={isResending}>{isResending ? 'Отправка...' : 'Отправить код повторно'}</button>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button type="button" className="btn" onClick={onCancel}>Отмена</button>
-              <button type="submit" className="btn btn-primary" disabled={isLoading}>{isLoading ? 'Проверка...' : 'Подтвердить'}</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Компонент ввода email
-const EmailForm = ({ username, isExistingUser, onSubmit, onBack }) => {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) {
-      setError('Введите email');
-      return;
-    }
-    setIsLoading(true);
-    await onSubmit(email.trim());
-    setIsLoading(false);
-  };
-
-  return (
-    <div className="login-container">
-      <h2>📚 Книжный клуб Тулы</h2>
-      <div className="step-container">
-        <div className="step-title">{isExistingUser ? `Подтверждение для ${username}` : `Регистрация ${username}`}</div>
-        <form onSubmit={handleSubmit}>
-          <input type="email" className="login-input" placeholder="Ваш email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} required autoFocus />
-          {error && <div className="error-message">{error}</div>}
-          <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-            <button type="button" className="btn" onClick={onBack}>Назад</button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={isLoading}>{isLoading ? 'Отправка...' : 'Получить код'}</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Компонент входа (шаг 1 - ввод ника)
+// Компонент входа
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
-  const [step, setStep] = useState('nickname');
-  const [pendingUsername, setPendingUsername] = useState('');
-  const [isExistingUser, setIsExistingUser] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
 
-  const sendVerificationCode = async (emailToSend, name) => {
-    const code = generateCode();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    
-    await db.collection('email_verifications').doc(emailToSend).set({
-      code: code,
-      expiresAt: expiresAt,
-      username: name,
-      createdAt: new Date()
+  const checkUsernameUnique = async (name) => {
+    const snapshot = await db.collection('meetings').get();
+    let existingUsers = new Set();
+    snapshot.forEach(doc => {
+      const guests = doc.data().guests || [];
+      guests.forEach(guest => existingUsers.add(guest));
     });
-
-    const response = await fetch('/.netlify/functions/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailToSend, code: code, name: name })
-    });
-
-    if (!response.ok) throw new Error('Ошибка отправки письма');
-    return true;
+    return !existingUsers.has(name);
   };
 
-  const handleNicknameSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (!username.trim()) {
       setError('Пожалуйста, представьтесь 😊');
       return;
@@ -216,32 +91,15 @@ const Login = ({ onLogin }) => {
     setIsChecking(true);
 
     try {
-      const fingerprint = getFingerprint();
-      
-      // Проверяем, есть ли уже такой пользователь
-      const userDoc = await db.collection('users').doc(username.trim()).get();
-      
-      if (userDoc.exists) {
-        // Пользователь существует
-        const devices = userDoc.data().devices || [];
-        if (devices.includes(fingerprint)) {
-          // Это устройство уже зарегистрировано → вход
-          onLogin(username.trim());
+      if (username.trim() !== ADMIN_USERNAME) {
+        const isUnique = await checkUsernameUnique(username.trim());
+        if (!isUnique) {
+          setError('Такое имя уже используется');
           setIsChecking(false);
           return;
-        } else {
-          // Новое устройство → нужен email и код
-          setPendingUsername(username.trim());
-          setIsExistingUser(true);
-          setUserEmail(userDoc.data().email || '');
-          setStep('email');
         }
-      } else {
-        // Новый пользователь → нужен email и код
-        setPendingUsername(username.trim());
-        setIsExistingUser(false);
-        setStep('email');
       }
+      onLogin(username.trim());
     } catch (err) {
       setError('Ошибка соединения');
     } finally {
@@ -249,102 +107,21 @@ const Login = ({ onLogin }) => {
     }
   };
 
-  const handleEmailSubmit = async (email) => {
-    try {
-      await sendVerificationCode(email, pendingUsername);
-      setUserEmail(email);
-      setStep('code');
-    } catch (err) {
-      setError('Ошибка отправки кода. Попробуйте позже');
-      return;
-    }
-  };
-
-  const handleCodeVerified = async () => {
-    const fingerprint = getFingerprint();
-    const userDoc = await db.collection('users').doc(pendingUsername).get();
-    
-    if (userDoc.exists) {
-      // Существующий пользователь — добавляем новое устройство
-      const devices = userDoc.data().devices || [];
-      if (!devices.includes(fingerprint)) {
-        await db.collection('users').doc(pendingUsername).update({
-          devices: [...devices, fingerprint],
-          lastActive: new Date()
-        });
-      }
-      await db.collection('device_links').doc(fingerprint).set({
-        username: pendingUsername,
-        lastUsed: new Date()
-      });
-    } else {
-      // Новый пользователь — создаём
-      await db.collection('users').doc(pendingUsername).set({
-        username: pendingUsername,
-        email: userEmail,
-        devices: [fingerprint],
-        createdAt: new Date(),
-        lastActive: new Date()
-      });
-      await db.collection('device_links').doc(fingerprint).set({
-        username: pendingUsername,
-        email: userEmail,
-        firstSeen: new Date(),
-        lastUsed: new Date()
-      });
-    }
-    
-    onLogin(pendingUsername);
-  };
-
-  const handleResendCode = async () => {
-    await sendVerificationCode(userEmail, pendingUsername);
-  };
-
-  const handleBack = () => {
-    setStep('nickname');
-    setError('');
-  };
-
-  if (step === 'email') {
-    return (
-      <EmailForm 
-        username={pendingUsername}
-        isExistingUser={isExistingUser}
-        onSubmit={handleEmailSubmit}
-        onBack={handleBack}
-      />
-    );
-  }
-
-  if (step === 'code') {
-    return (
-      <CodeVerification 
-        email={userEmail}
-        username={pendingUsername}
-        onVerified={handleCodeVerified}
-        onCancel={handleBack}
-        onResendCode={handleResendCode}
-      />
-    );
-  }
-
   return (
     <div className="login-container">
       <h2>📚 Книжный клуб Тулы</h2>
-      <form onSubmit={handleNicknameSubmit}>
+      <form onSubmit={handleSubmit}>
         <input className="login-input" placeholder="Как к тебе обращаться?" value={username} onChange={e => { setUsername(e.target.value); setError(''); }} autoFocus />
         {error && <div className="error-message">{error}</div>}
         <button type="submit" className="btn" style={{ background: '#5c4426', color: 'white', width: '100%', padding: '12px' }} disabled={isChecking}>
-          {isChecking ? '✨ Проверка...' : '✨ Продолжить ✨'}
+          {isChecking ? '✨ Проверка...' : '✨ Войти ✨'}
         </button>
       </form>
-      <p style={{ fontSize: '0.8rem', color: '#7e6952', marginTop: '20px' }}>При первом входе потребуется подтверждение email</p>
     </div>
   );
 };
 
-// Модальное окно для встреч
+// Модальное окно
 const MeetingModal = ({ meeting, onSave, onClose }) => {
   const [book, setBook] = useState(meeting?.book || '');
   const [author, setAuthor] = useState(meeting?.author || '');
@@ -385,19 +162,15 @@ const App = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState(null);
   const isAdmin = user === ADMIN_USERNAME;
-  
+
   useEffect(() => {
-    const checkDevice = async () => {
-      const fingerprint = getFingerprint();
-      const deviceDoc = await db.collection('device_links').doc(fingerprint).get();
-      if (deviceDoc.exists) {
-        setUser(deviceDoc.data().username);
-      }
-      setLoading(false);
-    };
-    checkDevice();
+    const savedUser = localStorage.getItem('bookclub_user');
+    if (savedUser) {
+      setUser(savedUser);
+    }
+    setLoading(false);
   }, []);
-  
+
   useEffect(() => {
     if (!user) return;
     const unsubscribe = db.collection('meetings').onSnapshot(snapshot => {
@@ -406,7 +179,7 @@ const App = () => {
     });
     return () => unsubscribe();
   }, [user]);
-  
+
   const signUp = async (meetingId) => {
     const meetingRef = db.collection('meetings').doc(meetingId);
     const doc = await meetingRef.get();
@@ -415,7 +188,7 @@ const App = () => {
       await meetingRef.update({ guests: [...guests, user] });
     }
   };
-  
+
   const cancelSignUp = async (meetingId) => {
     const meetingRef = db.collection('meetings').doc(meetingId);
     const doc = await meetingRef.get();
@@ -423,36 +196,41 @@ const App = () => {
     const newGuests = guests.filter(g => g !== user);
     await meetingRef.update({ guests: newGuests });
   };
-  
+
   const addMeeting = async (meeting) => {
     const newId = Date.now().toString();
     await db.collection('meetings').doc(newId).set({ ...meeting, id: newId, guests: [] });
   };
-  
+
   const updateMeeting = async (meeting) => {
     await db.collection('meetings').doc(meeting.id).update(meeting);
   };
-  
+
   const deleteMeeting = async (id) => {
     if (confirm('Удалить встречу?')) {
       await db.collection('meetings').doc(id).delete();
     }
   };
-  
+
   const handleSave = (meeting) => {
     if (meeting.id) updateMeeting(meeting);
     else addMeeting(meeting);
     setShowModal(false);
   };
-  
+
+  const handleLogin = (username) => {
+    localStorage.setItem('bookclub_user', username);
+    setUser(username);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('bookclub_user');
     setUser(null);
   };
-  
-  if (!user) return <Login onLogin={setUser} />;
+
+  if (!user) return <Login onLogin={handleLogin} />;
   if (loading) return <div className="loading">📡 Загрузка...</div>;
-  
+
   return (
     <div className="container">
       <div className="header">
