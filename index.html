@@ -342,6 +342,14 @@ const Login = ({ onLogin }) => {
     });
     console.log('✅ Код сохранён в Firebase');
 
+    // ПРОВЕРКА: сразу читаем, что сохранилось
+    const check = await db.collection('verification_codes').doc(targetEmail).get();
+    if (check.exists) {
+      console.log('✅ Проверка: документ существует, код:', check.data().code);
+    } else {
+      console.error('❌ ДОКУМЕНТ ИСЧЕЗ СРАЗУ ПОСЛЕ СОХРАНЕНИЯ!');
+    }
+
     // 2. ПОТОМ отправляем письмо
     const res = await fetch('/.netlify/functions/send-code', {
       method: 'POST',
@@ -688,7 +696,7 @@ const App = () => {
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 
-<!-- Лёгкая защита от консоли (только блокировка клавиш)
+<!-- Лёгкая защита от консоли (только блокировка клавиш) -->
 <script>
 (function() {
     // Блокировка клавиш F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
@@ -715,7 +723,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         return false;
-    }); -->
+    });
 })();
 </script>
 </body>
