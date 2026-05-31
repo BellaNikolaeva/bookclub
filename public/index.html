@@ -36,6 +36,8 @@
         .loading { text-align: center; padding: 50px; color: #7e6952; }
         .code-input { font-size: 1.5rem; text-align: center; letter-spacing: 8px; }
         @media (max-width: 700px) { .meetings-grid { grid-template-columns: 1fr; } }
+        .step-container { max-width: 450px; margin: 0 auto; }
+        .step-title { font-size: 1.2rem; margin-bottom: 20px; color: #2c4128; }
     </style>
 </head>
 <body>
@@ -78,10 +80,11 @@ const getFingerprint = () => {
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 // Компонент ввода кода подтверждения
-const CodeVerification = ({ email, onVerified, onCancel }) => {
+const CodeVerification = ({ email, username, onVerified, onCancel, onResendCode }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,6 +111,12 @@ const CodeVerification = ({ email, onVerified, onCancel }) => {
     }
   };
 
+  const handleResend = async () => {
+    setIsResending(true);
+    await onResendCode();
+    setIsResending(false);
+  };
+
   return (
     <div className="modal" onClick={onCancel}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -116,9 +125,12 @@ const CodeVerification = ({ email, onVerified, onCancel }) => {
         <form onSubmit={handleSubmit}>
           <input type="text" placeholder="Введите 6-значный код" className="code-input" value={code} onChange={e => setCode(e.target.value)} maxLength={6} autoFocus />
           {error && <div className="error-message">{error}</div>}
-          <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
-            <button type="button" className="btn" onClick={onCancel}>Отмена</button>
-            <button type="submit" className="btn btn-primary" disabled={isLoading}>{isLoading ? 'Проверка...' : 'Подтвердить'}</button>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'space-between' }}>
+            <button type="button" className="btn" onClick={handleResend} disabled={isResending}>{isResending ? 'Отправка...' : 'Отправить код повторно'}</button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button type="button" className="btn" onClick={onCancel}>Отмена</button>
+              <button type="submit" className="btn btn-primary" disabled={isLoading}>{isLoading ? 'Проверка...' : 'Подтвердить'}</button>
+            </div>
           </div>
         </form>
       </div>
@@ -126,15 +138,50 @@ const CodeVerification = ({ email, onVerified, onCancel }) => {
   );
 };
 
-// Компонент регистрации/входа
-const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+// Компонент ввода email
+const EmailForm = ({ username, isExistingUser, onSubmit, onBack }) => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError('Введите email');
+      return;
+    }
+    setIsLoading(true);
+    await onSubmit(email.trim());
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="login-container">
+      <h2>📚 Книжный клуб Тулы</h2>
+      <div className="step-container">
+        <div className="step-title">{isExistingUser ? `Подтверждение для ${username}` : `Регистрация ${username}`}</div>
+        <form onSubmit={handleSubmit}>
+          <input type="email" className="login-input" placeholder="Ваш email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} required autoFocus />
+          {error && <div className="error-message">{error}</div>}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+            <button type="button" className="btn" onClick={onBack}>Назад</button>
+            <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={isLoading}>{isLoading ? 'Отправка...' : 'Получить код'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Компонент входа (шаг 1 - ввод ника)
+const Login = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [step, setStep] = useState('nickname');
   const [pendingUsername, setPendingUsername] = useState('');
-  const [isResending, setIsResending] = useState(false);
+  const [isExistingUser, setIsExistingUser] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const sendVerificationCode = async (emailToSend, name) => {
     const code = generateCode();
@@ -157,7 +204,7 @@ const Login = ({ onLogin }) => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleNicknameSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -166,11 +213,12 @@ const Login = ({ onLogin }) => {
       return;
     }
 
-    const fingerprint = getFingerprint();
     setIsChecking(true);
 
     try {
-      // Проверяем, существует ли пользователь с таким ником
+      const fingerprint = getFingerprint();
+      
+      // Проверяем, есть ли уже такой пользователь
       const userDoc = await db.collection('users').doc(username.trim()).get();
       
       if (userDoc.exists) {
@@ -179,15 +227,20 @@ const Login = ({ onLogin }) => {
         if (devices.includes(fingerprint)) {
           // Это устройство уже зарегистрировано → вход
           onLogin(username.trim());
+          setIsChecking(false);
+          return;
         } else {
-          // Новое устройство → запрос email и кода
+          // Новое устройство → нужен email и код
           setPendingUsername(username.trim());
-          setShowEmailForm(true);
+          setIsExistingUser(true);
+          setUserEmail(userDoc.data().email || '');
+          setStep('email');
         }
       } else {
-        // Новый пользователь → запрос email и регистрация
+        // Новый пользователь → нужен email и код
         setPendingUsername(username.trim());
-        setShowEmailForm(true);
+        setIsExistingUser(false);
+        setStep('email');
       }
     } catch (err) {
       setError('Ошибка соединения');
@@ -196,23 +249,15 @@ const Login = ({ onLogin }) => {
     }
   };
 
-  const handleEmailSubmit = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) {
-      setError('Введите email');
-      return;
-    }
-    
-    setIsResending(true);
+  const handleEmailSubmit = async (email) => {
     try {
-      await sendVerificationCode(email.trim(), pendingUsername);
-      setError('');
+      await sendVerificationCode(email, pendingUsername);
+      setUserEmail(email);
+      setStep('code');
     } catch (err) {
       setError('Ошибка отправки кода. Попробуйте позже');
-      setIsResending(false);
       return;
     }
-    setIsResending(false);
   };
 
   const handleCodeVerified = async () => {
@@ -220,7 +265,7 @@ const Login = ({ onLogin }) => {
     const userDoc = await db.collection('users').doc(pendingUsername).get();
     
     if (userDoc.exists) {
-      // Добавляем новое устройство
+      // Существующий пользователь — добавляем новое устройство
       const devices = userDoc.data().devices || [];
       if (!devices.includes(fingerprint)) {
         await db.collection('users').doc(pendingUsername).update({
@@ -233,50 +278,65 @@ const Login = ({ onLogin }) => {
         lastUsed: new Date()
       });
     } else {
-      // Создаём нового пользователя
+      // Новый пользователь — создаём
       await db.collection('users').doc(pendingUsername).set({
         username: pendingUsername,
-        email: email.trim(),
+        email: userEmail,
         devices: [fingerprint],
         createdAt: new Date(),
         lastActive: new Date()
       });
       await db.collection('device_links').doc(fingerprint).set({
         username: pendingUsername,
-        email: email.trim(),
+        email: userEmail,
         firstSeen: new Date(),
         lastUsed: new Date()
       });
     }
     
-    setShowEmailForm(false);
     onLogin(pendingUsername);
   };
 
-  if (showEmailForm) {
+  const handleResendCode = async () => {
+    await sendVerificationCode(userEmail, pendingUsername);
+  };
+
+  const handleBack = () => {
+    setStep('nickname');
+    setError('');
+  };
+
+  if (step === 'email') {
     return (
-      <div className="login-container">
-        <h2>📚 Книжный клуб Тулы</h2>
-        <form onSubmit={handleEmailSubmit}>
-          <input type="email" className="login-input" placeholder="Ваш email (для подтверждения)" value={email} onChange={e => setEmail(e.target.value)} required />
-          {error && <div className="error-message">{error}</div>}
-          <button type="submit" className="btn" style={{ background: '#5c4426', color: 'white', width: '100%', padding: '12px' }} disabled={isResending}>
-            {isResending ? 'Отправка...' : 'Получить код подтверждения'}
-          </button>
-        </form>
-        <CodeVerification email={email} onVerified={handleCodeVerified} onCancel={() => { setShowEmailForm(false); setError(''); }} />
-      </div>
+      <EmailForm 
+        username={pendingUsername}
+        isExistingUser={isExistingUser}
+        onSubmit={handleEmailSubmit}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  if (step === 'code') {
+    return (
+      <CodeVerification 
+        email={userEmail}
+        username={pendingUsername}
+        onVerified={handleCodeVerified}
+        onCancel={handleBack}
+        onResendCode={handleResendCode}
+      />
     );
   }
 
   return (
     <div className="login-container">
       <h2>📚 Книжный клуб Тулы</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleNicknameSubmit}>
         <input className="login-input" placeholder="Как к тебе обращаться?" value={username} onChange={e => { setUsername(e.target.value); setError(''); }} autoFocus />
         {error && <div className="error-message">{error}</div>}
         <button type="submit" className="btn" style={{ background: '#5c4426', color: 'white', width: '100%', padding: '12px' }} disabled={isChecking}>
-          {isChecking ? '✨ Проверка...' : '✨ Войти ✨'}
+          {isChecking ? '✨ Проверка...' : '✨ Продолжить ✨'}
         </button>
       </form>
       <p style={{ fontSize: '0.8rem', color: '#7e6952', marginTop: '20px' }}>При первом входе потребуется подтверждение email</p>
