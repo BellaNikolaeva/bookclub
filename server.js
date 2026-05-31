@@ -54,7 +54,7 @@ const db = null;
 console.log("⚠️ Firebase ВРЕМЕННО отключен для диагностики статики");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
