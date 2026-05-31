@@ -3,206 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Книжный клуб</title>
+    <title>Книжный клуб | Тула</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        }
-        body {
-            background: linear-gradient(145deg, #f8f5f0 0%, #f0ebe3 100%);
-            min-height: 100vh;
-            padding: 24px 20px;
-        }
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-        .header {
-            background: rgba(255, 248, 235, 0.9);
-            border-radius: 48px;
-            padding: 12px 24px;
-            margin-bottom: 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            border: 1px solid rgba(210,180,140,0.3);
-        }
-        .logo h1 {
-            font-size: 1.7rem;
-            background: linear-gradient(135deg, #2c3e2f, #5c3e1f);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .user-info {
-            background: #fff6ed;
-            padding: 6px 18px;
-            border-radius: 40px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .admin-badge {
-            background: #c7a46b;
-            color: white;
-            border-radius: 30px;
-            padding: 4px 12px;
-            font-size: 0.75rem;
-        }
-        .meetings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 28px;
-            margin-top: 20px;
-        }
-        .meeting-card {
-            background: white;
-            border-radius: 32px;
-            padding: 24px;
-            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.1);
-            border: 1px solid #f1e2d0;
-            position: relative;
-        }
-        .book-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #2c4128;
-            margin-bottom: 8px;
-            padding-right: 50px;
-        }
-        .author {
-            color: #866f50;
-            margin-bottom: 12px;
-        }
-        .meeting-details {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin: 12px 0;
-        }
-        .detail {
-            background: #f6ede3;
-            padding: 5px 12px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-        }
-        .guests-section {
-            margin: 18px 0 16px;
-            background: #fdf9f3;
-            border-radius: 24px;
-            padding: 12px 16px;
-        }
-        .guest-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        .guest-badge {
-            background: #e9dbcd;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-        }
-        .btn {
-            border: none;
-            padding: 10px 18px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        .btn-primary {
-            background: #2c5e2f;
-            color: white;
-        }
-        .btn-danger {
-            background: #cfb197;
-            color: #5a2e14;
-        }
-        .btn-add {
-            background: #5c4426;
-            color: white;
-            margin-bottom: 20px;
-        }
-        .admin-actions {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 8px;
-        }
-        .icon-btn {
-            background: #f0e3d4;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .login-container {
-            max-width: 450px;
-            margin: 80px auto;
-            background: white;
-            border-radius: 48px;
-            padding: 40px;
-            text-align: center;
-        }
-        .login-input {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: 60px;
-            border: 1px solid #ddcdb5;
-            margin: 16px 0;
-            font-size: 1rem;
-        }
-        .error-message {
-            color: #d32f2f;
-            font-size: 0.85rem;
-            margin-top: -10px;
-            margin-bottom: 10px;
-            text-align: left;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 40px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-        }
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0 16px;
-            border-radius: 60px;
-            border: 1px solid #ddcdb5;
-        }
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #7e6952;
-        }
-        @media (max-width: 700px) {
-            .meetings-grid { grid-template-columns: 1fr; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(145deg, #f8f5f0 0%, #f0ebe3 100%); min-height: 100vh; padding: 24px 20px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        .header { background: rgba(255, 248, 235, 0.9); border-radius: 48px; padding: 12px 24px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border: 1px solid rgba(210,180,140,0.3); }
+        .logo h1 { font-size: 1.7rem; background: linear-gradient(135deg, #2c3e2f, #5c3e1f); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        .user-info { background: #fff6ed; padding: 6px 18px; border-radius: 40px; display: flex; align-items: center; gap: 20px; }
+        .admin-badge { background: #c7a46b; color: white; border-radius: 30px; padding: 4px 12px; font-size: 0.75rem; }
+        .meetings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 28px; margin-top: 20px; }
+        .meeting-card { background: white; border-radius: 32px; padding: 24px; box-shadow: 0 12px 24px -12px rgba(0,0,0,0.1); border: 1px solid #f1e2d0; position: relative; }
+        .book-title { font-size: 1.5rem; font-weight: 700; color: #2c4128; margin-bottom: 8px; padding-right: 50px; }
+        .author { color: #866f50; margin-bottom: 12px; }
+        .meeting-details { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+        .detail { background: #f6ede3; padding: 5px 12px; border-radius: 30px; font-size: 0.85rem; }
+        .guests-section { margin: 18px 0 16px; background: #fdf9f3; border-radius: 24px; padding: 12px 16px; }
+        .guest-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .guest-badge { background: #e9dbcd; padding: 4px 12px; border-radius: 30px; font-size: 0.8rem; }
+        .btn { border: none; padding: 10px 18px; border-radius: 50px; font-weight: 600; cursor: pointer; margin-right: 10px; }
+        .btn-primary { background: #2c5e2f; color: white; }
+        .btn-danger { background: #cfb197; color: #5a2e14; }
+        .btn-add { background: #5c4426; color: white; margin-bottom: 20px; }
+        .admin-actions { position: absolute; top: 20px; right: 20px; display: flex; gap: 8px; }
+        .icon-btn { background: #f0e3d4; border: none; width: 32px; height: 32px; border-radius: 30px; cursor: pointer; font-size: 1rem; }
+        .login-container { max-width: 450px; margin: 80px auto; background: white; border-radius: 48px; padding: 40px; text-align: center; }
+        .login-input { width: 100%; padding: 14px 20px; border-radius: 60px; border: 1px solid #ddcdb5; margin: 16px 0; font-size: 1rem; }
+        .error-message { color: #d32f2f; font-size: 0.85rem; margin-top: -10px; margin-bottom: 10px; text-align: left; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 40px; padding: 30px; width: 90%; max-width: 500px; }
+        .modal-content input { width: 100%; padding: 12px; margin: 8px 0 16px; border-radius: 60px; border: 1px solid #ddcdb5; }
+        .loading { text-align: center; padding: 50px; color: #7e6952; }
+        .code-input { font-size: 1.5rem; text-align: center; letter-spacing: 8px; }
+        @media (max-width: 700px) { .meetings-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -211,427 +44,410 @@
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-// Конфигурация
-const ADMIN_SECRET = "mysecretpassword";
-
-// Функция для генерации fingerprint (работает на всех устройствах, включая iOS)
-const generateFingerprint = () => {
-    // Собираем информацию о браузере/устройстве
-    const navigatorInfo = {
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        platform: navigator.platform,
-        screenWidth: screen.width,
-        screenHeight: screen.height,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        touchSupport: 'ontouchstart' in window,
-        localStorage: !!window.localStorage
-    };
-    
-    // Создаём уникальную строку
-    const fingerprintData = JSON.stringify(navigatorInfo);
-    
-    // Простой хеш (не криптографический, но для наших целей достаточно)
-    let hash = 0;
-    for (let i = 0; i < fingerprintData.length; i++) {
-        const char = fingerprintData.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    
-    // Добавляем случайную соль при первом создании
-    let salt = localStorage.getItem('fingerprint_salt');
-    if (!salt) {
-        salt = Math.random().toString(36) + Date.now().toString(36);
-        try {
-            localStorage.setItem('fingerprint_salt', salt);
-        } catch (e) {
-            // Если localStorage недоступен (приватный режим iOS), используем sessionStorage
-            try {
-                sessionStorage.setItem('fingerprint_salt', salt);
-            } catch (e2) {
-                // Если ничего не работает, просто используем хеш без соли
-                return `fp_${Math.abs(hash)}_${Date.now()}`;
-            }
-        }
-    }
-    
-    return `fp_${Math.abs(hash)}_${salt.substring(0, 16)}`;
+// Firebase конфиг
+const firebaseConfig = {
+  apiKey: "AIzaSyDeKUvJ50VcDihRi4EpE7PPJjPP-yhdiKs",
+  authDomain: "book-club-2025-06.firebaseapp.com",
+  projectId: "book-club-2025-06",
+  storageBucket: "book-club-2025-06.firebasestorage.app",
+  messagingSenderId: "290500419564",
+  appId: "1:290500419564:web:e748262bfa58fd667b2ac9"
 };
 
-// Компонент входа (с поддержкой iOS)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const ADMIN_USERNAME = "admin";
+
+// Вспомогательные функции
+const getFingerprint = () => {
+  let fp = localStorage.getItem('device_fingerprint');
+  if (!fp) {
+    fp = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36) + Date.now().toString(36);
+    localStorage.setItem('device_fingerprint', fp);
+  }
+  return fp;
+};
+
+const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// Компонент ввода кода подтверждения
+const CodeVerification = ({ email, onVerified, onCancel }) => {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!code) return;
+    
+    setIsLoading(true);
+    try {
+      const verificationDoc = await db.collection('email_verifications').doc(email).get();
+      if (verificationDoc.exists && verificationDoc.data().code === code) {
+        const expiresAt = verificationDoc.data().expiresAt?.toDate();
+        if (expiresAt && expiresAt > new Date()) {
+          await db.collection('email_verifications').doc(email).delete();
+          onVerified();
+        } else {
+          setError('Код истёк. Запросите новый');
+        }
+      } else {
+        setError('Неверный код');
+      }
+    } catch (err) {
+      setError('Ошибка проверки кода');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal" onClick={onCancel}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <h3>Подтверждение email</h3>
+        <p>Код отправлен на {email}</p>
+        <form onSubmit={handleSubmit}>
+          <input type="text" placeholder="Введите 6-значный код" className="code-input" value={code} onChange={e => setCode(e.target.value)} maxLength={6} autoFocus />
+          {error && <div className="error-message">{error}</div>}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
+            <button type="button" className="btn" onClick={onCancel}>Отмена</button>
+            <button type="submit" className="btn btn-primary" disabled={isLoading}>{isLoading ? 'Проверка...' : 'Подтвердить'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Компонент регистрации/входа
 const Login = ({ onLogin }) => {
-    const [username, setUsername] = useState('');
-    const [error, setError] = useState('');
-    const [isChecking, setIsChecking] = useState(false);
-    const [isLoadingDevice, setIsLoadingDevice] = useState(true);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [pendingUsername, setPendingUsername] = useState('');
+  const [isResending, setIsResending] = useState(false);
+
+  const sendVerificationCode = async (emailToSend, name) => {
+    const code = generateCode();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
     
-    // Получение сохранённого fingerprint (работает даже в приватном режиме iOS)
-    const getFingerprint = () => {
-        // Пытаемся получить существующий fingerprint
-        let fp = null;
-        try {
-            fp = localStorage.getItem('device_fingerprint');
-        } catch (e) {
-            // localStorage может быть недоступен в приватном режиме
-        }
-        
-        if (!fp) {
-            try {
-                fp = sessionStorage.getItem('device_fingerprint');
-            } catch (e) {}
-        }
-        
-        if (!fp) {
-            // Генерируем новый fingerprint
-            fp = generateFingerprint();
-            // Пытаемся сохранить в доступное хранилище
-            try {
-                localStorage.setItem('device_fingerprint', fp);
-            } catch (e) {
-                try {
-                    sessionStorage.setItem('device_fingerprint', fp);
-                } catch (e2) {
-                    // Если ничего не работает, сохраняем в памяти (но при обновлении страницы потеряется)
-                    window._tempFingerprint = fp;
-                }
-            }
-        }
-        
-        return fp;
-    };
+    await db.collection('email_verifications').doc(emailToSend).set({
+      code: code,
+      expiresAt: expiresAt,
+      username: name,
+      createdAt: new Date()
+    });
+
+    const response = await fetch('/.netlify/functions/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailToSend, code: code, name: name })
+    });
+
+    if (!response.ok) throw new Error('Ошибка отправки письма');
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
     
-    // При загрузке проверяем, не привязано ли уже устройство к какому-то нику
-    useEffect(() => {
-        const checkDevice = async () => {
-            try {
-                const fingerprint = getFingerprint();
-                const res = await fetch('/api/register-device', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fingerprint })
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.username) {
-                        onLogin(data.username);
-                        return;
-                    }
-                }
-                setIsLoadingDevice(false);
-            } catch (err) {
-                console.error('Ошибка проверки устройства:', err);
-                setIsLoadingDevice(false);
-            }
-        };
-        
-        checkDevice();
-    }, []);
-    
-    const checkUsernameUnique = async (name) => {
-        try {
-            const res = await fetch('/api/check-username', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: name })
-            });
-            const data = await res.json();
-            return data.available;
-        } catch (err) {
-            console.error('Ошибка проверки имени:', err);
-            return true;
+    if (!username.trim()) {
+      setError('Пожалуйста, представьтесь 😊');
+      return;
+    }
+
+    const fingerprint = getFingerprint();
+    setIsChecking(true);
+
+    try {
+      // Проверяем, существует ли пользователь с таким ником
+      const userDoc = await db.collection('users').doc(username.trim()).get();
+      
+      if (userDoc.exists) {
+        // Пользователь существует
+        const devices = userDoc.data().devices || [];
+        if (devices.includes(fingerprint)) {
+          // Это устройство уже зарегистрировано → вход
+          onLogin(username.trim());
+        } else {
+          // Новое устройство → запрос email и кода
+          setPendingUsername(username.trim());
+          setShowEmailForm(true);
         }
-    };
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        
-        if (!username.trim()) {
-            setError('Пожалуйста, представьтесь 😊');
-            return;
-        }
-        
-        setIsChecking(true);
-        
-        try {
-            const fingerprint = getFingerprint();
-            
-            const res = await fetch('/api/register-device', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fingerprint, username: username.trim() })
-            });
-            
-            if (!res.ok) {
-                const errorData = await res.json();
-                setError(errorData.error || 'Ошибка привязки устройства');
-                setIsChecking(false);
-                return;
-            }
-            
-            const data = await res.json();
-            
-            // Проверяем уникальность ника (только для новых пользователей)
-            if (data.isNew && username.trim() !== 'admin') {
-                const isUnique = await checkUsernameUnique(username.trim());
-                if (!isUnique) {
-                    setError('Такое имя уже используется');
-                    setIsChecking(false);
-                    return;
-                }
-            }
-            
-            // Всё хорошо — логиним
-            onLogin(username.trim());
-        } catch (err) {
-            setError('Ошибка соединения с сервером');
-        } finally {
-            setIsChecking(false);
-        }
-    };
-    
-    if (isLoadingDevice) {
-        return <div className="loading">🔍 Проверка устройства...</div>;
+      } else {
+        // Новый пользователь → запрос email и регистрация
+        setPendingUsername(username.trim());
+        setShowEmailForm(true);
+      }
+    } catch (err) {
+      setError('Ошибка соединения');
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError('Введите email');
+      return;
     }
     
+    setIsResending(true);
+    try {
+      await sendVerificationCode(email.trim(), pendingUsername);
+      setError('');
+    } catch (err) {
+      setError('Ошибка отправки кода. Попробуйте позже');
+      setIsResending(false);
+      return;
+    }
+    setIsResending(false);
+  };
+
+  const handleCodeVerified = async () => {
+    const fingerprint = getFingerprint();
+    const userDoc = await db.collection('users').doc(pendingUsername).get();
+    
+    if (userDoc.exists) {
+      // Добавляем новое устройство
+      const devices = userDoc.data().devices || [];
+      if (!devices.includes(fingerprint)) {
+        await db.collection('users').doc(pendingUsername).update({
+          devices: [...devices, fingerprint],
+          lastActive: new Date()
+        });
+      }
+      await db.collection('device_links').doc(fingerprint).set({
+        username: pendingUsername,
+        lastUsed: new Date()
+      });
+    } else {
+      // Создаём нового пользователя
+      await db.collection('users').doc(pendingUsername).set({
+        username: pendingUsername,
+        email: email.trim(),
+        devices: [fingerprint],
+        createdAt: new Date(),
+        lastActive: new Date()
+      });
+      await db.collection('device_links').doc(fingerprint).set({
+        username: pendingUsername,
+        email: email.trim(),
+        firstSeen: new Date(),
+        lastUsed: new Date()
+      });
+    }
+    
+    setShowEmailForm(false);
+    onLogin(pendingUsername);
+  };
+
+  if (showEmailForm) {
     return (
-        <div className="login-container">
-            <h2>📚 Книжный клуб</h2>
-            <form onSubmit={handleSubmit}>
-                <input 
-                    className="login-input" 
-                    placeholder="Как к тебе обращаться?" 
-                    value={username} 
-                    onChange={e => {
-                        setUsername(e.target.value);
-                        setError('');
-                    }}
-                    autoFocus
-                />
-                {error && <div className="error-message">{error}</div>}
-                <button 
-                    type="submit" 
-                    className="btn" 
-                    style={{background:'#5c4426',color:'white',width:'100%',padding:'12px'}}
-                    disabled={isChecking}
-                >
-                    {isChecking ? '✨ Проверка...' : '✨ Войти ✨'}
-                </button>
-            </form>
-        </div>
+      <div className="login-container">
+        <h2>📚 Книжный клуб Тулы</h2>
+        <form onSubmit={handleEmailSubmit}>
+          <input type="email" className="login-input" placeholder="Ваш email (для подтверждения)" value={email} onChange={e => setEmail(e.target.value)} required />
+          {error && <div className="error-message">{error}</div>}
+          <button type="submit" className="btn" style={{ background: '#5c4426', color: 'white', width: '100%', padding: '12px' }} disabled={isResending}>
+            {isResending ? 'Отправка...' : 'Получить код подтверждения'}
+          </button>
+        </form>
+        <CodeVerification email={email} onVerified={handleCodeVerified} onCancel={() => { setShowEmailForm(false); setError(''); }} />
+      </div>
     );
+  }
+
+  return (
+    <div className="login-container">
+      <h2>📚 Книжный клуб Тулы</h2>
+      <form onSubmit={handleSubmit}>
+        <input className="login-input" placeholder="Как к тебе обращаться?" value={username} onChange={e => { setUsername(e.target.value); setError(''); }} autoFocus />
+        {error && <div className="error-message">{error}</div>}
+        <button type="submit" className="btn" style={{ background: '#5c4426', color: 'white', width: '100%', padding: '12px' }} disabled={isChecking}>
+          {isChecking ? '✨ Проверка...' : '✨ Войти ✨'}
+        </button>
+      </form>
+      <p style={{ fontSize: '0.8rem', color: '#7e6952', marginTop: '20px' }}>При первом входе потребуется подтверждение email</p>
+    </div>
+  );
 };
 
-// Модальное окно для редактирования встречи
+// Модальное окно для встреч
 const MeetingModal = ({ meeting, onSave, onClose }) => {
-    const [book, setBook] = useState(meeting?.book || '');
-    const [author, setAuthor] = useState(meeting?.author || '');
-    const [date, setDate] = useState(meeting?.date || '');
-    const [time, setTime] = useState(meeting?.time || '19:00');
-    const [location, setLocation] = useState(meeting?.location || '');
-    
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSave({ ...meeting, book, author, date, time, location });
-    };
-    
-    return (
-        <div className="modal" onClick={onClose}>
-            <div className="modal-content" onClick={e=>e.stopPropagation()}>
-                <h3>{meeting ? 'Редактировать встречу' : 'Новая встреча'}</h3>
-                <form onSubmit={handleSubmit}>
-                    <input placeholder="Название книги" value={book} onChange={e=>setBook(e.target.value)} required/>
-                    <input placeholder="Автор" value={author} onChange={e=>setAuthor(e.target.value)} required/>
-                    <input type="date" value={date} onChange={e=>setDate(e.target.value)} required/>
-                    <input type="time" value={time} onChange={e=>setTime(e.target.value)} required/>
-                    <input placeholder="Место встречи" value={location} onChange={e=>setLocation(e.target.value)} required/>
-                    <div style={{display:'flex', gap:'12px', marginTop:'20px', justifyContent:'flex-end'}}>
-                        <button type="button" className="btn" onClick={onClose}>Отмена</button>
-                        <button type="submit" className="btn btn-primary">Сохранить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
+  const [book, setBook] = useState(meeting?.book || '');
+  const [author, setAuthor] = useState(meeting?.author || '');
+  const [date, setDate] = useState(meeting?.date || '');
+  const [time, setTime] = useState(meeting?.time || '19:00');
+  const [location, setLocation] = useState(meeting?.location || '');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...meeting, book, author, date, time, location });
+  };
+  
+  return (
+    <div className="modal" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <h3>{meeting ? 'Редактировать встречу' : 'Новая встреча'}</h3>
+        <form onSubmit={handleSubmit}>
+          <input placeholder="Название книги" value={book} onChange={e => setBook(e.target.value)} required />
+          <input placeholder="Автор" value={author} onChange={e => setAuthor(e.target.value)} required />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
+          <input type="time" value={time} onChange={e => setTime(e.target.value)} required />
+          <input placeholder="Место встречи" value={location} onChange={e => setLocation(e.target.value)} required />
+          <div style={{ display: 'flex', gap: '12px', marginTop: '20px', justifyContent: 'flex-end' }}>
+            <button type="button" className="btn" onClick={onClose}>Отмена</button>
+            <button type="submit" className="btn btn-primary">Сохранить</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 // Главный компонент
 const App = () => {
-    const [user, setUser] = useState(null);
-    const [meetings, setMeetings] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [editingMeeting, setEditingMeeting] = useState(null);
-    const isAdmin = user === 'admin';
-    
-    // Загрузка сохранённого пользователя при старте
-    useEffect(() => {
-        let savedUser = null;
-        try {
-            savedUser = localStorage.getItem('bookclub_user');
-        } catch (e) {}
-        if (savedUser) {
-            setUser(savedUser);
-        }
-        setLoading(false);
-    }, []);
-    
-    // Загрузка встреч только когда пользователь есть
-    useEffect(() => {
-        if (!user) return;
-        fetchMeetings();
-    }, [user]);
-    
-    const fetchMeetings = async () => {
-        try {
-            const res = await fetch('/api/meetings');
-            const data = await res.json();
-            setMeetings(data);
-        } catch (error) {
-            console.error('Ошибка загрузки:', error);
-        }
+  const [user, setUser] = useState(null);
+  const [meetings, setMeetings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState(null);
+  const isAdmin = user === ADMIN_USERNAME;
+  
+  useEffect(() => {
+    const checkDevice = async () => {
+      const fingerprint = getFingerprint();
+      const deviceDoc = await db.collection('device_links').doc(fingerprint).get();
+      if (deviceDoc.exists) {
+        setUser(deviceDoc.data().username);
+      }
+      setLoading(false);
     };
-    
-    const signUp = async (meetingId) => {
-        const res = await fetch(`/api/meetings/${meetingId}/signup`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: user })
-        });
-        if (res.ok) fetchMeetings();
-    };
-    
-    const cancelSignUp = async (meetingId) => {
-        const res = await fetch(`/api/meetings/${meetingId}/cancel`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: user })
-        });
-        if (res.ok) fetchMeetings();
-    };
-    
-    const addMeeting = async (meeting) => {
-        const res = await fetch('/api/meetings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ secret: ADMIN_SECRET, meeting })
-        });
-        if (res.ok) {
-            fetchMeetings();
-            setShowModal(false);
-        }
-    };
-    
-    const updateMeeting = async (meeting) => {
-        const res = await fetch(`/api/meetings/${meeting.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ secret: ADMIN_SECRET, meeting })
-        });
-        if (res.ok) {
-            fetchMeetings();
-            setShowModal(false);
-        }
-    };
-    
-    const deleteMeeting = async (id) => {
-        if (confirm('Удалить встречу?')) {
-            await fetch(`/api/meetings/${id}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ secret: ADMIN_SECRET })
-            });
-            fetchMeetings();
-        }
-    };
-    
-    const handleSave = (meeting) => {
-        if (meeting.id) updateMeeting(meeting);
-        else addMeeting(meeting);
-    };
-    
-    const handleLogin = (username) => {
-        try {
-            localStorage.setItem('bookclub_user', username);
-        } catch (e) {}
-        setUser(username);
-    };
-    
-    const handleLogout = () => {
-        try {
-            localStorage.removeItem('bookclub_user');
-        } catch (e) {}
-        setUser(null);
-    };
-    
-    if (!user) return <Login onLogin={handleLogin} />;
-    if (loading) return <div className="loading">📡 Загрузка...</div>;
-    
-    return (
-        <div className="container">
-            <div className="header">
-                <div className="logo"><h1>📖 БукКлуб</h1></div>
-                <div className="user-info">
-                    <span>👋 {user}</span>
-                    {isAdmin && <span className="admin-badge">Админ</span>}
-                    <button className="btn" onClick={handleLogout}>Выйти</button>
-                </div>
-            </div>
-            
-            {isAdmin && (
-                <button className="btn btn-add" onClick={() => { setEditingMeeting(null); setShowModal(true); }}>
-                    ➕ Добавить встречу
-                </button>
-            )}
-            
-            <div className="meetings-grid">
-                {meetings.map(meeting => (
-                    <div key={meeting.id} className="meeting-card">
-                        {isAdmin && (
-                            <div className="admin-actions">
-                                <button className="icon-btn" onClick={() => { setEditingMeeting(meeting); setShowModal(true); }}>✏️</button>
-                                <button className="icon-btn" onClick={() => deleteMeeting(meeting.id)}>🗑️</button>
-                            </div>
-                        )}
-                        <div className="book-title">{meeting.book}</div>
-                        <div className="author">{meeting.author}</div>
-                        <div className="meeting-details">
-                            <span className="detail">📅 {new Date(meeting.date).toLocaleDateString('ru-RU')}</span>
-                            <span className="detail">⏰ {meeting.time}</span>
-                            <span className="detail">📍 {meeting.location}</span>
-                        </div>
-                        <div className="guests-section">
-                            <strong>👥 Участники ({meeting.guests?.length || 0})</strong>
-                            <div className="guest-list">
-                                {(!meeting.guests || meeting.guests.length === 0) && <span style={{color:'#bda68a'}}>Пока никого нет</span>}
-                                {meeting.guests?.map((g, i) => <span key={i} className="guest-badge">{g} {g === user && '(вы)'}</span>)}
-                            </div>
-                        </div>
-                        <div>
-                            {!meeting.guests?.includes(user) ? 
-                                <button className="btn btn-primary" onClick={() => signUp(meeting.id)}>✍️ Записаться</button> :
-                                <button className="btn btn-danger" onClick={() => cancelSignUp(meeting.id)}>❌ Отменить запись</button>
-                            }
-                        </div>
-                    </div>
-                ))}
-            </div>
-            
-            {showModal && (
-                <MeetingModal 
-                    meeting={editingMeeting} 
-                    onSave={handleSave} 
-                    onClose={() => setShowModal(false)} 
-                />
-            )}
+    checkDevice();
+  }, []);
+  
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = db.collection('meetings').onSnapshot(snapshot => {
+      const meetingsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setMeetings(meetingsList);
+    });
+    return () => unsubscribe();
+  }, [user]);
+  
+  const signUp = async (meetingId) => {
+    const meetingRef = db.collection('meetings').doc(meetingId);
+    const doc = await meetingRef.get();
+    const guests = doc.data().guests || [];
+    if (!guests.includes(user)) {
+      await meetingRef.update({ guests: [...guests, user] });
+    }
+  };
+  
+  const cancelSignUp = async (meetingId) => {
+    const meetingRef = db.collection('meetings').doc(meetingId);
+    const doc = await meetingRef.get();
+    const guests = doc.data().guests || [];
+    const newGuests = guests.filter(g => g !== user);
+    await meetingRef.update({ guests: newGuests });
+  };
+  
+  const addMeeting = async (meeting) => {
+    const newId = Date.now().toString();
+    await db.collection('meetings').doc(newId).set({ ...meeting, id: newId, guests: [] });
+  };
+  
+  const updateMeeting = async (meeting) => {
+    await db.collection('meetings').doc(meeting.id).update(meeting);
+  };
+  
+  const deleteMeeting = async (id) => {
+    if (confirm('Удалить встречу?')) {
+      await db.collection('meetings').doc(id).delete();
+    }
+  };
+  
+  const handleSave = (meeting) => {
+    if (meeting.id) updateMeeting(meeting);
+    else addMeeting(meeting);
+    setShowModal(false);
+  };
+  
+  const handleLogout = () => {
+    localStorage.removeItem('bookclub_user');
+    setUser(null);
+  };
+  
+  if (!user) return <Login onLogin={setUser} />;
+  if (loading) return <div className="loading">📡 Загрузка...</div>;
+  
+  return (
+    <div className="container">
+      <div className="header">
+        <div className="logo"><h1>📖 БукКлуб | Тула</h1></div>
+        <div className="user-info">
+          <span>👋 {user}</span>
+          {isAdmin && <span className="admin-badge">Админ</span>}
+          <button className="btn" onClick={handleLogout}>Выйти</button>
         </div>
-    );
+      </div>
+      
+      {isAdmin && (
+        <button className="btn btn-add" onClick={() => { setEditingMeeting(null); setShowModal(true); }}>
+          ➕ Добавить встречу
+        </button>
+      )}
+      
+      <div className="meetings-grid">
+        {meetings.map(meeting => (
+          <div key={meeting.id} className="meeting-card">
+            {isAdmin && (
+              <div className="admin-actions">
+                <button className="icon-btn" onClick={() => { setEditingMeeting(meeting); setShowModal(true); }}>✏️</button>
+                <button className="icon-btn" onClick={() => deleteMeeting(meeting.id)}>🗑️</button>
+              </div>
+            )}
+            <div className="book-title">{meeting.book}</div>
+            <div className="author">{meeting.author}</div>
+            <div className="meeting-details">
+              <span className="detail">📅 {new Date(meeting.date).toLocaleDateString('ru-RU')}</span>
+              <span className="detail">⏰ {meeting.time}</span>
+              <span className="detail">📍 {meeting.location}</span>
+            </div>
+            <div className="guests-section">
+              <strong>👥 Участники ({meeting.guests?.length || 0})</strong>
+              <div className="guest-list">
+                {(!meeting.guests || meeting.guests.length === 0) && <span style={{ color: '#bda68a' }}>Пока никого нет</span>}
+                {meeting.guests?.map((g, i) => <span key={i} className="guest-badge">{g} {g === user && '(вы)'}</span>)}
+              </div>
+            </div>
+            <div>
+              {!meeting.guests?.includes(user) 
+                ? <button className="btn btn-primary" onClick={() => signUp(meeting.id)}>✍️ Записаться</button>
+                : <button className="btn btn-danger" onClick={() => cancelSignUp(meeting.id)}>❌ Отменить запись</button>
+              }
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {showModal && (
+        <MeetingModal meeting={editingMeeting} onSave={handleSave} onClose={() => setShowModal(false)} />
+      )}
+    </div>
+  );
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
