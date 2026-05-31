@@ -309,6 +309,25 @@ async function initDefaultMeetings() {
   }
 }
 
+// ВРЕМЕННЫЙ ТЕСТОВЫЙ МАРШРУТ - удалить после исправления
+app.get('/test', (req, res) => {
+  res.send('Сервер работает! 🚀');
+});
+
+// Проверка, видит ли сервер папку public
+app.get('/check-public', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const publicPath = path.join(__dirname, 'public');
+  fs.readdir(publicPath, (err, files) => {
+    if (err) {
+      res.send(`Ошибка: папка public не найдена. Путь: ${publicPath}`);
+    } else {
+      res.send(`Папка public найдена. Файлы: ${files.join(', ')}`);
+    }
+  });
+});
+
 // Запуск сервера
 app.listen(PORT, async () => {
   console.log(`🚀 Сервер запущен на порту ${PORT}`);
